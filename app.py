@@ -14,6 +14,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+__version__ = "1.0.1"
+
 
 def cut_image_grid(img, rows=8, cols=10, cut_mode="grid", auto_crop=True, debug=False, crop_intensity=50, margin_px=0):
     """
@@ -1518,7 +1520,12 @@ def main():
         )
 
     # Hero
-    st.markdown('<div class="hero-title">Image Splitter</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="hero-title">Image Splitter '
+        f'<span style="font-size:0.45em;color:#94a3b8;font-weight:500;vertical-align:middle;">v{__version__}</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
     st.markdown(
         '<div class="hero-sub">ตัดภาพ grid เป็นภาพย่อยอัตโนมัติ · รองรับหลายไฟล์พร้อมกัน</div>',
         unsafe_allow_html=True,
