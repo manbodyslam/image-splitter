@@ -1361,8 +1361,46 @@ def _process_one(img, cut_mode, target_aspect):
     cells = [c for c in cells if c['image'].size[0] > 0 and c['image'].size[1] > 0]
     if not cells:
         return None, None, None, None, debug
-    cw = sum(c['image'].size[0] for c in cells) // len(cells)
-    ch = sum(c['image'].size[1] for c in cells) // len(cells)
+
+    # === Post-trim: ตัดขอบ border ที่หลุดมาในแต่ละ cell ===
+    # คำนวณ trim ที่ต้องการจากทุก cell แล้วใช้ค่าสูงสุด (รักษาขนาดเท่ากัน)
+    def _detect_trim(pil_img, bv, tol=20, purity=0.92):
+        a = np.array(pil_img.convert('RGB'))
+        g = cv2.cvtColor(a, cv2.COLOR_RGB2GRAY)
+        msk = np.abs(g.astype(np.int32) - bv) < tol
+        row_frac = msk.mean(axis=1)
+        col_frac = msk.mean(axis=0)
+        h, w = g.shape
+        top = 0
+        while top < h // 4 and row_frac[top] >= purity:
+            top += 1
+        bot = 0
+        while bot < h // 4 and row_frac[h - 1 - bot] >= purity:
+            bot += 1
+        left = 0
+        while left < w // 4 and col_frac[left] >= purity:
+            left += 1
+        right = 0
+        while right < w // 4 and col_frac[w - 1 - right] >= purity:
+            right += 1
+        return top, bot, left, right
+
+    trims = [_detect_trim(c['image'], border_val) for c in cells]
+    max_top = max(t[0] for t in trims)
+    max_bot = max(t[1] for t in trims)
+    max_left = max(t[2] for t in trims)
+    max_right = max(t[3] for t in trims)
+
+    if max_top or max_bot or max_left or max_right:
+        for c in cells:
+            w, h = c['image'].size
+            c['image'] = c['image'].crop((max_left, max_top, w - max_right, h - max_bot))
+
+    cells = [c for c in cells if c['image'].size[0] > 0 and c['image'].size[1] > 0]
+    if not cells:
+        return None, None, None, None, debug
+    cw = cells[0]['image'].size[0]
+    ch = cells[0]['image'].size[1]
     return cells, cw, ch, border_val, debug
 
 
