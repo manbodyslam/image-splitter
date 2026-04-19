@@ -1,0 +1,28 @@
+# venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# session / private
+ψ/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# test images (อย่า push ขึ้น public)
+img/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.webp
+*.zip
+
+# streamlit runtime
+.streamlit/secrets.toml
