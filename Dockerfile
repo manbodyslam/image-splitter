@@ -22,4 +22,7 @@ CMD ["streamlit", "run", "app.py", \
      "--server.address=0.0.0.0", \
      "--server.port=8501", \
      "--server.headless=true", \
+     "--server.maxUploadSize=10", \
+     "--server.enableXsrfProtection=true", \
+     "--server.enableCORS=false", \
      "--browser.gatherUsageStats=false"]
