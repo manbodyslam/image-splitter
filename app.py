@@ -1731,10 +1731,6 @@ def main():
             failed.append((uf.name, f"format ไม่รองรับ: {img.format}"))
             continue
 
-        if img.format != EXT_TO_FORMAT[ext]:
-            failed.append((uf.name, f"เนื้อไฟล์ ({img.format}) ไม่ตรงกับนามสกุล (.{ext})"))
-            continue
-
         pixels = img.size[0] * img.size[1]
         if pixels > MAX_PIXELS_4K:
             failed.append((
