@@ -18,7 +18,7 @@ import numpy as np
 
 __version__ = "1.0.8"
 
-MAX_FILE_MB = 10
+MAX_FILE_MB = 20
 MAX_PIXELS_4K = 6144 * 3456  # ~21.2 MP (6K, รองรับ AI grid ทั่วไป)
 MAX_FILES_PER_BATCH = 20
 ALLOWED_FORMATS = {"PNG", "JPEG", "WEBP", "BMP", "GIF"}
