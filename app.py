@@ -16,7 +16,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 
 MAX_FILE_MB = 20
 MAX_PIXELS_4K = 6144 * 3456  # ~21.2 MP (6K, รองรับ AI grid ทั่วไป)
