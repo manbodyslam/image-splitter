@@ -15,8 +15,9 @@ import os
 from pathlib import Path
 import cv2
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 
 MAX_FILE_MB = 20
 MAX_PIXELS_4K = 6144 * 3456  # ~21.2 MP (6K, รองรับ AI grid ทั่วไป)
@@ -1324,8 +1325,14 @@ def _process_one(img, cut_mode, target_aspect):
     W, H = img.size
     megapixels = (W * H) / 1_000_000
 
-    # Primary: border-based detection (แม่นที่สุด — ใช้สีขอบเป็น anchor)
-    boxes, border_val, dbg = detect_cells_by_borders(img)
+    # รัน 3 detector พร้อมกัน (cv2/numpy ปล่อย GIL) — ผลลัพธ์เหมือนเดิม 100%
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        fut_borders = ex.submit(detect_cells_by_borders, img)
+        fut_cc = ex.submit(detect_cells_cc, img)
+        fut_proj = ex.submit(detect_content_blocks, img)
+        boxes, border_val, dbg = fut_borders.result()
+        bx_cc, bv_cc, dbg_cc = fut_cc.result()
+        h_ranges, v_ranges, bv2, dbg2 = fut_proj.result()
     method = "borders"
 
     # ถ้า cut_mode = vertical/horizontal → ยุบเป็นแถวเดียว / คอลัมน์เดียว
@@ -1362,14 +1369,12 @@ def _process_one(img, cut_mode, target_aspect):
 
     best_score = _grid_score(boxes)
 
-    # เทียบกับ CC
-    bx_cc, bv_cc, dbg_cc = detect_cells_cc(img)
+    # เทียบกับ CC (ผลคำนวณล่วงหน้าแล้วด้านบน)
     s_cc = _grid_score(bx_cc)
     if s_cc > best_score:
         boxes, border_val, dbg, method, best_score = bx_cc, bv_cc, dbg_cc, "cc", s_cc
 
     # เทียบกับ projection เดิม
-    h_ranges, v_ranges, bv2, dbg2 = detect_content_blocks(img)
     if h_ranges and v_ranges:
         fb = _boxes_from_ranges(h_ranges, v_ranges)
         s_fb = _grid_score(fb)
